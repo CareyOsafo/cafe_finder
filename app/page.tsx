@@ -296,8 +296,8 @@ export default function PlaceFinderPage() {
                   <MapPin className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-semibold">Explore Places</CardTitle>
-                  <CardDescription className="text-sm">Discover what's around you</CardDescription>
+                  <CardTitle className="text-2xl font-semibold">Explore Places Around You</CardTitle>
+                  <CardDescription className="text-sm">See what's around you and touch grass BITCH!!!</CardDescription>
                 </div>
               </div>
             </div>
