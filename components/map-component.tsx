@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import type { Cafe } from "@/app/page"
+import type { Place } from "@/app/page"
 
 // Fix for default marker icons in Leaflet
 const initializeLeaflet = async () => {
@@ -20,12 +20,12 @@ const initializeLeaflet = async () => {
 
 interface MapComponentProps {
   userLocation: [number, number] | null
-  cafes: Cafe[]
-  selectedCafe: Cafe | null
-  onCafeSelect: (cafe: Cafe | null) => void
+  places: Place[]
+  selectedPlace: Place | null
+  onPlaceSelect: (place: Place | null) => void
 }
 
-export default function MapComponent({ userLocation, cafes, selectedCafe, onCafeSelect }: MapComponentProps) {
+export default function MapComponent({ userLocation, places, selectedPlace, onPlaceSelect }: MapComponentProps) {
   const mapRef = useRef<any>(null)
   const markersRef = useRef<any[]>([])
   const userMarkerRef = useRef<any>(null)
@@ -52,7 +52,7 @@ export default function MapComponent({ userLocation, cafes, selectedCafe, onCafe
       if (!mounted) return
 
       const map = L.map("map", {
-        center: [37.7749, -122.4194], // Default to San Francisco
+        center: [5.6037, -0.187], // Default to Accra, Ghana
         zoom: 13,
         zoomControl: true,
       })
@@ -113,7 +113,6 @@ export default function MapComponent({ userLocation, cafes, selectedCafe, onCafe
     mapRef.current.setView(userLocation, 13)
   }, [userLocation])
 
-  // Update cafe markers
   useEffect(() => {
     if (!mapRef.current || !leafletRef.current) return
 
@@ -123,56 +122,88 @@ export default function MapComponent({ userLocation, cafes, selectedCafe, onCafe
     markersRef.current.forEach((marker) => marker.remove())
     markersRef.current = []
 
-    // Create custom cafe icon
-    const cafeIcon = L.divIcon({
-      className: "cafe-marker",
-      html: `
-        <div style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          background: #8b5cf6;
-          border: 2px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          cursor: pointer;
-        ">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-            <line x1="6" y1="1" x2="6" y2="4"></line>
-            <line x1="10" y1="1" x2="10" y2="4"></line>
-            <line x1="14" y1="1" x2="14" y2="4"></line>
-          </svg>
-        </div>
-      `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-    })
+    const createPlaceIcon = (type: Place["type"]) => {
+      let color = "#8b5cf6"
+      let icon = ""
+
+      switch (type) {
+        case "tourist_attraction":
+          color = "#3b82f6"
+          icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>`
+          break
+        case "restaurant":
+          color = "#ef4444"
+          icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"></path>
+            <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"></path>
+            <path d="m2.1 21.8 6.4-6.3"></path>
+            <path d="m19 5-7 7"></path>
+          </svg>`
+          break
+        case "attraction":
+          color = "#10b981"
+          icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+            <circle cx="12" cy="13" r="3"></circle>
+          </svg>`
+          break
+        case "nightclub":
+          color = "#8b5cf6"
+          icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>`
+          break
+      }
+
+      return L.divIcon({
+        className: "place-marker",
+        html: `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: ${color};
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+          ">
+            ${icon}
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      })
+    }
 
     // Add new markers
-    cafes.forEach((cafe) => {
-      if (!cafe.lat || !cafe.lon) return
+    places.forEach((place) => {
+      if (!place.lat || !place.lon) return
 
-      const marker = L.marker([cafe.lat, cafe.lon], { icon: cafeIcon })
+      const marker = L.marker([place.lat, place.lon], { icon: createPlaceIcon(place.type) })
         .addTo(mapRef.current!)
-        .bindPopup(cafe.name)
+        .bindPopup(place.name)
         .on("click", () => {
-          onCafeSelect(cafe)
+          onPlaceSelect(place)
         })
 
       markersRef.current.push(marker)
     })
-  }, [cafes, onCafeSelect])
+  }, [places, onPlaceSelect])
 
-  // Highlight selected cafe
+  // Highlight selected place
   useEffect(() => {
-    if (!mapRef.current || !selectedCafe) return
+    if (!mapRef.current || !selectedPlace) return
 
-    mapRef.current.setView([selectedCafe.lat, selectedCafe.lon], 15)
-  }, [selectedCafe])
+    mapRef.current.setView([selectedPlace.lat, selectedPlace.lon], 15)
+  }, [selectedPlace])
 
   return <div id="map" className="h-full w-full" />
 }
