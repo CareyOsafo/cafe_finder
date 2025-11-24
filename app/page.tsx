@@ -45,7 +45,7 @@ export default function PlaceFinderPage() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [places, setPlaces] = useState<Place[]>([])
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
-  const [searchQuery, setSearchQuery] = useState("Accra")
+  const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
