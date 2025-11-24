@@ -1,0 +1,39 @@
+{
+  "name": "Cafe Finder",
+  "short_name": "Cafe Finder",
+  "description": "Find great cafes near you using OpenStreetMap",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Find Nearby Cafes",
+      "short_name": "Find Cafes",
+      "description": "Find cafes near your current location",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon-192.jpg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
