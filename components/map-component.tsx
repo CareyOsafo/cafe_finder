@@ -158,6 +158,16 @@ export default function MapComponent({ userLocation, places, selectedPlace, onPl
             <circle cx="18" cy="16" r="3"></circle>
           </svg>`
           break
+        case "pub":
+          color = "#f59e0b"
+          icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path d="M17 11h1a3 3 0 0 1 0 6h-1"></path>
+            <path d="M9 12v6"></path>
+            <path d="M13 12v6"></path>
+            <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.5-.5 2.5-.5S9.44 2 11 2s2 1.5 3 1.5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"></path>
+            <path d="M5 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"></path>
+          </svg>`
+          break
       }
 
       return L.divIcon({
@@ -167,19 +177,20 @@ export default function MapComponent({ userLocation, places, selectedPlace, onPl
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             background: ${color};
-            border: 2px solid white;
+            border: 3px solid white;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
+            transition: transform 0.2s;
           ">
             ${icon}
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
       })
     }
 

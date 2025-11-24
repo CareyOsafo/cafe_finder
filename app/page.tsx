@@ -6,7 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Navigation, Search, Loader2, Landmark, UtensilsCrossed, Camera } from "lucide-react"
+import {
+  MapPin,
+  Navigation,
+  Search,
+  Loader2,
+  Landmark,
+  UtensilsCrossed,
+  Camera,
+  Music,
+  Beer,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react"
 import PWAInstaller from "@/components/pwa-installer"
 
 // Dynamically import the map component to avoid SSR issues
@@ -26,14 +38,14 @@ export interface Place {
   lon: number
   address?: string
   cuisine?: string
-  type: "tourist_attraction" | "restaurant" | "attraction" | "nightclub"
+  type: "tourist_attraction" | "restaurant" | "attraction" | "nightclub" | "pub"
 }
 
 export default function PlaceFinderPage() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [places, setPlaces] = useState<Place[]>([])
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("Accra")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
@@ -41,7 +53,12 @@ export default function PlaceFinderPage() {
     "restaurant",
     "attraction",
     "nightclub",
+    "pub",
   ])
+
+  const [showCategories, setShowCategories] = useState(true)
+
+  const [isIOS, setIsIOS] = useState(false)
 
   const getUserLocation = () => {
     setLoading(true)
@@ -115,6 +132,13 @@ export default function PlaceFinderPage() {
         `)
       }
 
+      if (selectedCategories.includes("pub")) {
+        queries.push(`
+          node["amenity"="pub"](around:${radius},${lat},${lon});
+          way["amenity"="pub"](around:${radius},${lat},${lon});
+        `)
+      }
+
       const query = `
         [out:json];
         (
@@ -145,6 +169,8 @@ export default function PlaceFinderPage() {
           type = "restaurant"
         } else if (element.tags?.amenity === "nightclub" || element.tags?.club === "nightclub") {
           type = "nightclub"
+        } else if (element.tags?.amenity === "pub") {
+          type = "pub"
         }
 
         return {
@@ -210,6 +236,14 @@ export default function PlaceFinderPage() {
   }
 
   useEffect(() => {
+    const detectIOS = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase()
+      return /iphone|ipad|ipod/.test(userAgent)
+    }
+    setIsIOS(detectIOS())
+  }, [])
+
+  useEffect(() => {
     if (userLocation && selectedCategories.length > 0) {
       searchNearbyPlaces(userLocation[0], userLocation[1])
     }
@@ -228,7 +262,19 @@ export default function PlaceFinderPage() {
       case "attraction":
         return <Camera className="h-4 w-4" />
       case "nightclub":
-        return <span className="text-xs">🎵</span>
+        return <Music className="h-4 w-4" />
+      case "pub":
+        return <Beer className="h-4 w-4" />
+    }
+  }
+
+  const openDirections = (place: Place) => {
+    if (isIOS) {
+      // Use Apple Maps on iOS devices
+      window.open(`http://maps.apple.com/?daddr=${place.lat},${place.lon}&dirflg=d`, "_blank")
+    } else {
+      // Use Google Maps on other devices
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`, "_blank")
     }
   }
 
@@ -241,76 +287,128 @@ export default function PlaceFinderPage() {
         onPlaceSelect={setSelectedPlace}
       />
 
-      <div className="absolute top-0 left-0 right-0 z-[1000] p-4 pointer-events-none">
-        <Card className="max-w-2xl mx-auto shadow-lg pointer-events-auto">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-6 w-6 text-accent-strong" />
-              <CardTitle className="text-2xl">Places to Visit</CardTitle>
+      <div className="absolute top-0 left-0 right-0 z-[1000] p-3 md:p-4 pointer-events-none">
+        <Card className="max-w-3xl mx-auto shadow-xl backdrop-blur-sm bg-card/95 border-border/50 pointer-events-auto">
+          <CardHeader className="pb-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-semibold">Explore Places</CardTitle>
+                  <CardDescription className="text-sm">Discover what's around you</CardDescription>
+                </div>
+              </div>
             </div>
-            <CardDescription>Discover attractions, restaurants, and places to visit</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+
             <div className="flex gap-2">
-              <Input
-                placeholder="Search city (e.g., Accra, London)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchByLocation()}
-                className="flex-1"
-              />
-              <Button onClick={searchByLocation} disabled={loading || !searchQuery.trim()}>
-                <Search className="h-4 w-4" />
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search city (e.g., Accra, London, Paris)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchByLocation()}
+                  className="pl-9 h-11"
+                />
+              </div>
+              <Button onClick={searchByLocation} disabled={loading || !searchQuery.trim()} size="lg" className="px-6">
+                Go
               </Button>
-              <Button onClick={getUserLocation} disabled={loading} variant="outline">
+              <Button
+                onClick={getUserLocation}
+                disabled={loading}
+                variant="outline"
+                size="lg"
+                className="px-4 bg-transparent"
+              >
                 <Navigation className="h-4 w-4" />
               </Button>
             </div>
+          </CardHeader>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={selectedCategories.includes("tourist_attraction") ? "default" : "outline"}
-                onClick={() => toggleCategory("tourist_attraction")}
-              >
-                <Landmark className="h-4 w-4 mr-1" />
-                Tourist Spots
-              </Button>
-              <Button
-                size="sm"
-                variant={selectedCategories.includes("restaurant") ? "default" : "outline"}
-                onClick={() => toggleCategory("restaurant")}
-              >
-                <UtensilsCrossed className="h-4 w-4 mr-1" />
-                Restaurants
-              </Button>
-              <Button
-                size="sm"
-                variant={selectedCategories.includes("attraction") ? "default" : "outline"}
-                onClick={() => toggleCategory("attraction")}
-              >
-                <Camera className="h-4 w-4 mr-1" />
-                Attractions
-              </Button>
-              <Button
-                size="sm"
-                variant={selectedCategories.includes("nightclub") ? "default" : "outline"}
-                onClick={() => toggleCategory("nightclub")}
-              >
-                <span className="mr-1">🎵</span>
-                Nightclubs
+          <CardContent className="space-y-3 pt-0">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-muted-foreground">Filter by Category</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowCategories(!showCategories)} className="h-8 px-2">
+                {showCategories ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Hide
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Show
+                  </>
+                )}
               </Button>
             </div>
 
+            {showCategories && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <Button
+                  size="default"
+                  variant={selectedCategories.includes("tourist_attraction") ? "default" : "outline"}
+                  onClick={() => toggleCategory("tourist_attraction")}
+                  className="h-11 justify-start gap-2"
+                >
+                  <Landmark className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tourist Spots</span>
+                </Button>
+                <Button
+                  size="default"
+                  variant={selectedCategories.includes("restaurant") ? "default" : "outline"}
+                  onClick={() => toggleCategory("restaurant")}
+                  className="h-11 justify-start gap-2"
+                >
+                  <UtensilsCrossed className="h-4 w-4" />
+                  <span className="text-sm font-medium">Restaurants</span>
+                </Button>
+                <Button
+                  size="default"
+                  variant={selectedCategories.includes("attraction") ? "default" : "outline"}
+                  onClick={() => toggleCategory("attraction")}
+                  className="h-11 justify-start gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span className="text-sm font-medium">Attractions</span>
+                </Button>
+                <Button
+                  size="default"
+                  variant={selectedCategories.includes("nightclub") ? "default" : "outline"}
+                  onClick={() => toggleCategory("nightclub")}
+                  className="h-11 justify-start gap-2"
+                >
+                  <Music className="h-4 w-4" />
+                  <span className="text-sm font-medium">Nightclubs</span>
+                </Button>
+                <Button
+                  size="default"
+                  variant={selectedCategories.includes("pub") ? "default" : "outline"}
+                  onClick={() => toggleCategory("pub")}
+                  className="h-11 justify-start gap-2"
+                >
+                  <Beer className="h-4 w-4" />
+                  <span className="text-sm font-medium">Pubs</span>
+                </Button>
+              </div>
+            )}
+
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Searching for places...</span>
               </div>
             )}
-            {error && <div className="text-sm text-destructive">{error}</div>}
+            {error && (
+              <div className="px-3 py-2 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
+                {error}
+              </div>
+            )}
             {!loading && places.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg text-sm text-primary font-medium">
                 <MapPin className="h-4 w-4" />
                 <span>Found {places.length} places nearby</span>
               </div>
@@ -320,46 +418,45 @@ export default function PlaceFinderPage() {
       </div>
 
       {selectedPlace && (
-        <div className="absolute bottom-4 left-4 right-4 md:bottom-auto md:top-4 md:right-4 md:left-auto md:w-80 z-[1000]">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg">{selectedPlace.name}</CardTitle>
+        <div className="absolute bottom-4 left-4 right-4 md:bottom-auto md:top-4 md:right-4 md:left-auto md:w-96 z-[1000]">
+          <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-border/50">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-2 flex-1">
+                  <CardTitle className="text-xl font-semibold leading-tight">{selectedPlace.name}</CardTitle>
                   {selectedPlace.address && (
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {selectedPlace.address}
+                    <CardDescription className="flex items-start gap-2 text-sm">
+                      <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span className="leading-relaxed">{selectedPlace.address}</span>
                     </CardDescription>
                   )}
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex gap-2">
-                <Badge variant="secondary" className="flex items-center gap-1">
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1">
                   {getPlaceIcon(selectedPlace.type)}
-                  {selectedPlace.type === "tourist_attraction" && "Tourist Attraction"}
-                  {selectedPlace.type === "restaurant" && "Restaurant"}
-                  {selectedPlace.type === "attraction" && "Attraction"}
-                  {selectedPlace.type === "nightclub" && "Nightclub"}
+                  <span className="capitalize">
+                    {selectedPlace.type === "tourist_attraction" && "Tourist Attraction"}
+                    {selectedPlace.type === "restaurant" && "Restaurant"}
+                    {selectedPlace.type === "attraction" && "Attraction"}
+                    {selectedPlace.type === "nightclub" && "Nightclub"}
+                    {selectedPlace.type === "pub" && "Pub"}
+                  </span>
                 </Badge>
-                {selectedPlace.cuisine && <Badge variant="outline">{selectedPlace.cuisine}</Badge>}
+                {selectedPlace.cuisine && (
+                  <Badge variant="outline" className="px-3 py-1">
+                    {selectedPlace.cuisine}
+                  </Badge>
+                )}
               </div>
               <div className="flex gap-2">
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    window.open(
-                      `https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.lat},${selectedPlace.lon}`,
-                      "_blank",
-                    )
-                  }}
-                >
+                <Button className="flex-1 h-11" onClick={() => openDirections(selectedPlace)}>
                   <Navigation className="h-4 w-4 mr-2" />
-                  Get Directions
+                  {isIOS ? "Open in Apple Maps" : "Get Directions"}
                 </Button>
-                <Button variant="outline" onClick={() => setSelectedPlace(null)}>
+                <Button variant="outline" onClick={() => setSelectedPlace(null)} className="h-11 px-6">
                   Close
                 </Button>
               </div>
