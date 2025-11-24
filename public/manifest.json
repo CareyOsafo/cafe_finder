@@ -1,7 +1,7 @@
 {
-  "name": "Cafe Finder",
-  "short_name": "Cafe Finder",
-  "description": "Find great cafes near you using OpenStreetMap",
+  "name": "Place Finder",
+  "short_name": "Place Finder",
+  "description": "Find great places near you using OpenStreetMap",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -24,9 +24,9 @@
   "categories": ["food", "lifestyle"],
   "shortcuts": [
     {
-      "name": "Find Nearby Cafes",
-      "short_name": "Find Cafes",
-      "description": "Find cafes near your current location",
+      "name": "Find Nearby places",
+      "short_name": "Find places",
+      "description": "Find places near your current location",
       "url": "/",
       "icons": [
         {

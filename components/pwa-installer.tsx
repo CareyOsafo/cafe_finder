@@ -55,7 +55,7 @@ export default function PWAInstaller() {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-base">Install Cafe Finder</CardTitle>
+              <CardTitle className="text-base">Install Place Finder</CardTitle>
               <CardDescription className="text-sm">Install the app for quick access and offline use</CardDescription>
             </div>
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowInstallPrompt(false)}>

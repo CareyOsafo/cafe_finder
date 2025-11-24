@@ -2,7 +2,7 @@
 
 declare const self: ServiceWorkerGlobalScope
 
-const CACHE_NAME = "cafe-finder-v1"
+const CACHE_NAME = "place-finder"
 const URLS_TO_CACHE = ["/", "/manifest.json", "/icon-192.jpg", "/icon-512.jpg"]
 
 // Install event - cache essential resources

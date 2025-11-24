@@ -8,18 +8,17 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Cafe Finder - Discover Great Cafes Near You",
+  title: "Place Finder - Discover Great Places Near You",
   description:
-    "Find and explore cafes in your area using OpenStreetMap. Get directions, view details, and discover your next favorite coffee spot.",
-  keywords: ["cafe finder", "coffee shops", "cafes near me", "coffee", "openstreetmap"],
-  authors: [{ name: "Cafe Finder" }],
-  creator: "v0.dev",
-  generator: "v0.app",
+    "Find and explore places in your area using OpenStreetMap. Get directions, view details, and discover your next favorite coffee spot.",
+  keywords: ["Place finder", "coffee shops", "places near me", "coffee", "openstreetmap"],
+  authors: [{ name: "place Finder" }],
+  creator: "Carey Aboagye Osafo",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Cafe Finder",
+    title: "Place Finder",
   },
   icons: {
     icon: [
